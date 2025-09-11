@@ -11,9 +11,7 @@ import React, { useState } from 'react';
 // import { LanguageSelector } from '@/components/language/language-selector';
 // import { OfflineIndicator } from '@/components/offline/offline-indicator';
 
-interface DashboardProps {
-  // Add any props you need
-}
+
 
 const HealthcareDashboard: React.FC<DashboardProps> = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('en');

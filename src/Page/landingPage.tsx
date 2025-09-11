@@ -245,7 +245,7 @@ const PreLoginLanding: React.FC<PreLoginLandingProps> = ({ onLoginClick, onSignu
                     <span key={i} className="text-yellow-400 text-lg">⭐</span>
                   ))}
                 </div>
-                <p className="text-primary mb-4 italic">"{testimonial.text}"</p>
+                <p className="text-primary mb-4 italic">{`"${testimonial.text}"`}</p>
                 <div>
                   <p className="font-semibold dark:text-gray-300">{testimonial.name}</p>
                   <p className="text-sm text-gray-500">{testimonial.location}</p>
