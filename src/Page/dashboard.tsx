@@ -13,8 +13,7 @@ import React, { useState } from 'react';
 
 
 
-const HealthcareDashboard: React.FC<DashboardProps> = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
+const HealthcareDashboard = () => {
   const [isOffline, setIsOffline] = useState(false);
 
   // Sample data for telemedicine app
