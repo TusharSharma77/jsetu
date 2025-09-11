@@ -10,12 +10,9 @@ import Link from 'next/link';
 // import { VideoPreview } from '@/components/video/video-preview';
 // import { TestimonialCard } from '@/components/testimonial/testimonial-card';
 
-interface PreLoginLandingProps {
-  onLoginClick: () => void;
-  onSignupClick: () => void;
-}
 
-const PreLoginLanding: React.FC<PreLoginLandingProps> = ({ onLoginClick, onSignupClick }) => {
+
+const PreLoginLanding = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
 
   const features = [
@@ -107,7 +104,7 @@ const PreLoginLanding: React.FC<PreLoginLandingProps> = ({ onLoginClick, onSignu
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button 
-                onClick={onSignupClick}
+                onClick={}
                 className="px-8 py-4 bg-blue-600 cursor-pointer text-white text-lg font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
               >
                 Get Started Free
@@ -267,13 +264,13 @@ const PreLoginLanding: React.FC<PreLoginLandingProps> = ({ onLoginClick, onSignu
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
-              onClick={onSignupClick}
+              onClick={}
               className="px-8 py-4 bg-gray-100 cursor-pointer text-blue-600 text-lg font-semibold rounded-lg hover:bg-gray-100 transition-colors"
             >
               Start Your Journey
             </button>
             <button 
-              onClick={onLoginClick}
+              onClick={}
               className="px-8 py-4 border-2 cursor-pointer border-gray-100 text-white text-lg font-semibold rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors"
             >
               Already Have Account?
