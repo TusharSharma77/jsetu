@@ -4,7 +4,12 @@ import { motion, ValueAnimationTransition } from "motion/react";
 
 
 
-const transition:ValueAnimationTransition<any> = {
+const transition:ValueAnimationTransition<{type: string,
+  mass:number,
+  damping: number,
+  stiffness:number,
+  restDelta:number,
+ restSpeed: number}> = {
   type: "spring",
   mass: 0.5,
   damping: 11.5,
