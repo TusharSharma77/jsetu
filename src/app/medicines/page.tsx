@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { Search, MapPin, Clock, Phone, Star, Filter, Pill, Heart } from 'lucide-react';
-import { sampleMedicines, samplePharmacies } from '@/data/sampleData';
+'use client';
 
-const MedicineAvailability: React.FC = () => {
+import { useState, type FC } from 'react';
+import { Search, MapPin, Clock, Phone, Star, Filter, Pill, Heart } from 'lucide-react';
+import { sampleMedicines, samplePharmacies } from '@/data/sampleData'; // if alias fails, use relative path
+
+const MedicineAvailability: FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  
+
   const categories = [
     { id: 'all', name: 'All Medicines', icon: Pill },
     { id: 'antibiotics', name: 'Antibiotics', icon: Heart },
@@ -17,10 +19,14 @@ const MedicineAvailability: React.FC = () => {
     { id: 'skin-care', name: 'Skin Care', icon: Heart }
   ];
 
-  const filteredMedicines = sampleMedicines.filter(medicine => 
-    medicine.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (selectedCategory === 'all' || medicine.category === selectedCategory)
-  );
+  const normalizedSearch = (text?: string) => (text || '').toLowerCase();
+
+  const filteredMedicines = (sampleMedicines || []).filter((medicine: any) => {
+    const name = medicine.name || medicine.medicine || medicine.title || '';
+    const matchesSearch = normalizedSearch(name).includes(normalizedSearch(searchTerm));
+    const matchesCategory = selectedCategory === 'all' || medicine.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -75,54 +81,61 @@ const MedicineAvailability: React.FC = () => {
             Available Medicines ({filteredMedicines.length})
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredMedicines.map((medicine) => (
-              <div key={medicine.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{medicine.name}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{medicine.category}</p>
+            {filteredMedicines.map((medicine: any) => {
+              const name = medicine.name || medicine.medicine || medicine.title || 'Unknown';
+              const availableAt = Array.isArray(medicine.availableAt) ? medicine.availableAt : [];
+              return (
+                <div key={medicine.id ?? name} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{name}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{medicine.category ?? 'General'}</p>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      (medicine.stock || '').toLowerCase().includes('in') 
+                        ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                        : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
+                    }`}>
+                      {medicine.stock ?? 'Unknown'}
+                    </span>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    medicine.stock === 'In Stock' 
-                      ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                      : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
-                  }`}>
-                    {medicine.stock}
-                  </span>
-                </div>
-                
-                <div className="space-y-2 mb-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    <strong>Price:</strong> ₹{medicine.price}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    <strong>Dosage:</strong> {medicine.dosage}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    <strong>Manufacturer:</strong> {medicine.manufacturer}
-                  </p>
-                </div>
 
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Available at:</h4>
-                  <div className="space-y-2">
-                    {medicine.availableAt.slice(0, 2).map((pharmacy) => (
-                      <div key={pharmacy.id} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 text-gray-400 mr-1" />
-                          <span className="text-gray-600 dark:text-gray-300">{pharmacy.name}</span>
+                  <div className="space-y-2 mb-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      <strong>Price:</strong> ₹{medicine.price ?? '—'}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      <strong>Dosage:</strong> {medicine.dosage ?? '—'}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      <strong>Manufacturer:</strong> {medicine.manufacturer ?? '—'}
+                    </p>
+                  </div>
+
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Available at:</h4>
+                    <div className="space-y-2">
+                      {availableAt.slice(0, 2).map((pharmacy: any) => (
+                        <div key={pharmacy.id ?? pharmacy.name} className="flex items-center justify-between text-sm">
+                          <div className="flex items-center">
+                            <MapPin className="h-4 w-4 text-gray-400 mr-1" />
+                            <span className="text-gray-600 dark:text-gray-300">{pharmacy.name ?? 'Unknown'}</span>
+                          </div>
+                          <span className="text-gray-500 dark:text-gray-400">{pharmacy.distance ?? '—'}</span>
                         </div>
-                        <span className="text-gray-500 dark:text-gray-400">{pharmacy.distance}</span>
-                      </div>
-                    ))}
+                      ))}
+                      {availableAt.length === 0 && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400">No nearby pharmacy data</div>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">
-                  Find Nearby Pharmacies
-                </button>
-              </div>
-            ))}
+                  <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">
+                    Find Nearby Pharmacies
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -130,16 +143,16 @@ const MedicineAvailability: React.FC = () => {
         <div>
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Nearby Pharmacies</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {samplePharmacies.map((pharmacy) => (
-              <div key={pharmacy.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow">
+            {(samplePharmacies || []).map((pharmacy: any) => (
+              <div key={pharmacy.id ?? pharmacy.name} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{pharmacy.name}</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{pharmacy.name ?? 'Unknown'}</h3>
                     <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                       <Star className="h-4 w-4 text-yellow-400 mr-1" />
-                      <span>{pharmacy.rating}</span>
+                      <span>{pharmacy.rating ?? '—'}</span>
                       <span className="mx-1">•</span>
-                      <span>{pharmacy.distance}</span>
+                      <span>{pharmacy.distance ?? '—'}</span>
                     </div>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -154,15 +167,15 @@ const MedicineAvailability: React.FC = () => {
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                     <MapPin className="h-4 w-4 text-gray-400 mr-2" />
-                    <span>{pharmacy.address}</span>
+                    <span>{pharmacy.address ?? '—'}</span>
                   </div>
                   <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                     <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                    <span>{pharmacy.phone}</span>
+                    <span>{pharmacy.phone ?? '—'}</span>
                   </div>
                   <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                     <Clock className="h-4 w-4 text-gray-400 mr-2" />
-                    <span>{pharmacy.hours}</span>
+                    <span>{pharmacy.hours ?? '—'}</span>
                   </div>
                 </div>
 
@@ -184,5 +197,6 @@ const MedicineAvailability: React.FC = () => {
 };
 
 export default MedicineAvailability;
+
 
 
