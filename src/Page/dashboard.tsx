@@ -1,20 +1,23 @@
 import React, { useState } from 'react';
-
-// Import required components (you'll need to create these)
-// import { Card } from '@/components/ui/card';
-// import { Button } from '@/components/ui/button';
-// import { Badge } from '@/components/ui/badge';
-// import { Progress } from '@/components/ui/progress';
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-// import { Chart } from '@/components/charts/chart';
-// import { VideoCall } from '@/components/video/video-call';
-// import { LanguageSelector } from '@/components/language/language-selector';
-// import { OfflineIndicator } from '@/components/offline/offline-indicator';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/globalContext/store';
+import AdminDashboard from '@/components/admin/AdminDashboard';
+import PatientDashboard from '@/components/dashboard/PatientDashboard';
+import ChatbotInterface from '@/components/chatbot/ChatbotInterface';
+import LanguageSelector from '@/components/language/LanguageSelector';
+import VideoCall from '@/components/telemedicine/VideoCall';
+import EnhancedSOS from '@/components/emergency/EnhancedSOS';
+import { sampleData } from '@/data/sampleData';
 
 
 
 const HealthcareDashboard = () => {
   const [isOffline, setIsOffline] = useState(false);
+  const [activeView, setActiveView] = useState<'dashboard' | 'admin' | 'emergency' | 'video-call'>('dashboard');
+  const [showVideoCall, setShowVideoCall] = useState(false);
+  
+  // Get user role from Redux store
+  const userRole = useSelector((state: RootState) => state.auth.userData?.role as string) || 'patient';
 
   // Sample data for telemedicine app
   const healthStats = [
@@ -59,6 +62,48 @@ const HealthcareDashboard = () => {
     { code: 'bn', name: 'বাংলা', flag: '🇮🇳' },
   ];
 
+  // Handle view switching
+  const handleViewChange = (view: 'dashboard' | 'admin' | 'emergency' | 'video-call') => {
+    setActiveView(view);
+  };
+
+  // Handle video call
+  const handleStartVideoCall = () => {
+    setShowVideoCall(true);
+    setActiveView('video-call');
+  };
+
+  const handleEndVideoCall = () => {
+    setShowVideoCall(false);
+    setActiveView('dashboard');
+  };
+
+  // Render different views based on user role
+  if (activeView === 'admin' && userRole === 'admin') {
+    return <AdminDashboard />;
+  }
+
+  if (userRole === 'patient' && activeView === 'dashboard') {
+    return <PatientDashboard />;
+  }
+
+  if (activeView === 'emergency') {
+    return <EnhancedSOS />;
+  }
+
+  if (activeView === 'video-call' && showVideoCall) {
+    return (
+      <VideoCall
+        roomId="consultation-123"
+        userId="user-456"
+        userName="Patient"
+        isDoctor={false}
+        onCallEnd={handleEndVideoCall}
+        language="en"
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
@@ -70,6 +115,9 @@ const HealthcareDashboard = () => {
               <p className="text-gray-600 dark:text-gray-300 mt-2">Multilingual telemedicine platform for rural healthcare access</p>
             </div>
             <div className="flex items-center space-x-4">
+              {/* Language Selector */}
+              <LanguageSelector variant="compact" />
+              
               {/* Offline Indicator */}
               <div className={`flex items-center px-3 py-1 rounded-full text-sm ${
                 isOffline ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' : 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
@@ -79,8 +127,42 @@ const HealthcareDashboard = () => {
                 }`} />
                 {isOffline ? 'Offline Mode' : 'Online'}
               </div>
-              
-             
+
+              {/* View Switcher */}
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleViewChange('dashboard')}
+                  className={`px-3 py-1 rounded-md text-sm ${
+                    activeView === 'dashboard' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  Dashboard
+                </button>
+                {userRole === 'admin' && (
+                  <button
+                    onClick={() => handleViewChange('admin')}
+                    className={`px-3 py-1 rounded-md text-sm ${
+                      activeView === 'admin' 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    Admin
+                  </button>
+                )}
+                <button
+                  onClick={() => handleViewChange('emergency')}
+                  className={`px-3 py-1 rounded-md text-sm ${
+                    activeView === 'emergency' 
+                      ? 'bg-red-600 text-white' 
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  Emergency
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -112,7 +194,10 @@ const HealthcareDashboard = () => {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Live Video Consultations</h2>
-                <button className="px-4 py-2 bg-blue-600 dark:bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-700 transition-colors">
+                <button 
+                  onClick={handleStartVideoCall}
+                  className="px-4 py-2 bg-blue-600 dark:bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-700 transition-colors"
+                >
                   Start New Consultation
                 </button>
               </div>
@@ -285,6 +370,17 @@ const HealthcareDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Chatbot Interface */}
+      <ChatbotInterface 
+        language="en"
+        onSymptomAnalysis={(analysis) => {
+          console.log('Symptom analysis:', analysis);
+        }}
+        onOutbreakAlert={(alert) => {
+          console.log('Outbreak alert:', alert);
+        }}
+      />
     </div>
   );
 };

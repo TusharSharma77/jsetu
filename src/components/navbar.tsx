@@ -150,7 +150,7 @@ export default function NavigationMenuDemo({ className }: Readonly<{ className?:
 
 
           ))}
-          <Link href={`/awareness`}><MenuItem setActive={setActive} active={active} className={`py-2 hover:bg-gray-200 dark:hover:bg-gray-500/30  rounded-2xl px-3`} item='Awareness' /></Link>
+          <Link href={`/health-awareness`}><MenuItem setActive={setActive} active={active} className={`py-2 hover:bg-gray-200 dark:hover:bg-gray-500/30  rounded-2xl px-3`} item='Health Awareness' /></Link>
         </div>
 
       </Menu>
@@ -189,13 +189,13 @@ export function Header() {
           <button onClick={() => setTheme(prev => prev === "dark" ? "light" : "dark")} className="cursor-pointer border-black/20 dark:border-white/20 border-2
             rounded-2xl p-1">
             {theme === "dark" ? <IconMoon color="white" /> : <IconSun color="black" />}
-          </button >
+          </button>
           <Link href='/symptoms' className="cursor-pointer border-black/20 dark:border-white/20 border-2
             rounded-2xl p-1 ">
             <IconRobotFace />
           </Link>
           <Select className="" options={["English"]} placeholder="Language" />
-          {!status?<Button onClick={()=>{dispatch(login({status:true}))}} className="hidden sm:block cursor-pointer ">Login/SignUp</Button>:<Link href="/profile"><Avatar className="cursor-pointer w-8 h-8 lg:w-10 lg:h-10" alt="avatar" src="avatar.png" /></Link>}
+          {!status?<Link href="/login"><Button className="hidden sm:block cursor-pointer ">Login/SignUp</Button></Link>:<Link href="/profile"><Avatar className="cursor-pointer w-8 h-8 lg:w-10 lg:h-10" alt="avatar" src="avatar.png" /></Link>}
 
         </div>
       </div>

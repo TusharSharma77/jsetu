@@ -1,15 +1,16 @@
 'use client'
 import React, { useState } from 'react';
-
-// Import required components
-// import { Textarea } from '@/components/ui/Textarea';
-// import { Button } from '@/components/ui/Button';
-// import { ResultCard } from '@/components/symptoms/ResultCard';
-// import { Suggestions } from '@/components/symptoms/Suggestions';
+import { useTranslation } from 'react-i18next';
+import ChatbotInterface from '@/components/chatbot/ChatbotInterface';
+import LanguageSelector from '@/components/language/LanguageSelector';
+import { SymptomAnalysis } from '@/lib/gemini';
 
 const SymptomChecker: React.FC = () => {
+  const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [language, setLanguage] = useState('en');
+  const [analysis, setAnalysis] = useState<SymptomAnalysis | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const results = [
     { label: 'Viral Fever', severity: 'low', recommendation: 'Home care and hydration', confidence: '78%' },
@@ -23,10 +24,10 @@ const SymptomChecker: React.FC = () => {
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">AI Symptom Checker</h1>
-            <p className="text-gray-600 dark:text-gray-300">Optimized for low-bandwidth areas and multilingual input</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('symptoms.title')}</h1>
+            <p className="text-gray-600 dark:text-gray-300">{t('symptoms.subtitle')}</p>
           </div>
-         
+          <LanguageSelector variant="compact" />
         </div>
 
         {/* Input */}
@@ -51,34 +52,76 @@ const SymptomChecker: React.FC = () => {
 
         {/* Results */}
         <div className="mt-6 space-y-3">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Possible Conditions</h2>
-          {results.map((r, idx) => (
-            <div key={idx} className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              {/* COMPONENT: <ResultCard result={r} /> */}
-              {/* ANIMATION: Expand/collapse for details */}
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{r.label}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{r.recommendation}</p>
-                </div>
-                <div className="text-right">
-                  <span className={`text-xs px-2 py-1 rounded-full ${r.severity === 'high' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' : r.severity === 'moderate' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' : 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'}`}>{r.severity}</span>
-                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">Confidence: {r.confidence}</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('symptoms.possibleConditions')}</h2>
+          {analysis ? (
+            analysis.possibleConditions.map((condition, idx) => (
+              <div key={idx} className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">{condition.condition}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{condition.description}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      condition.severity === 'critical' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' :
+                      condition.severity === 'high' ? 'bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200' :
+                      condition.severity === 'moderate' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' :
+                      'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                    }`}>
+                      {t(`symptoms.severity.${condition.severity}`)}
+                    </span>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">Confidence: {condition.confidence}%</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            results.map((r, idx) => (
+              <div key={idx} className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">{r.label}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{r.recommendation}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-xs px-2 py-1 rounded-full ${r.severity === 'high' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' : r.severity === 'moderate' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' : 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'}`}>{r.severity}</span>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">Confidence: {r.confidence}</p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Next Steps */}
         <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <h3 className="font-medium text-gray-900 dark:text-white mb-2">Next Steps</h3>
-          {/* COMPONENT: <Suggestions /> tailored to severity */}
-          <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 space-y-1">
-            <li>Schedule a video consultation for further guidance</li>
-            <li>Find nearby pharmacies for over-the-counter medicines</li>
-            <li>Save this assessment to your health records</li>
-          </ul>
+          <h3 className="font-medium text-gray-900 dark:text-white mb-2">{t('symptoms.nextSteps')}</h3>
+          {analysis ? (
+            <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 space-y-1">
+              {analysis.nextSteps.map((step, idx) => (
+                <li key={idx}>{step}</li>
+              ))}
+            </ul>
+          ) : (
+            <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 space-y-1">
+              <li>Schedule a video consultation for further guidance</li>
+              <li>Find nearby pharmacies for over-the-counter medicines</li>
+              <li>Save this assessment to your health records</li>
+            </ul>
+          )}
+        </div>
+
+        {/* Chatbot Interface */}
+        <div className="mt-6">
+          <ChatbotInterface 
+            language={language}
+            onSymptomAnalysis={(analysis) => {
+              setAnalysis(analysis);
+            }}
+            onOutbreakAlert={(alert) => {
+              console.log('Outbreak alert:', alert);
+            }}
+          />
         </div>
       </div>
     </div>
