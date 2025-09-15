@@ -2,7 +2,8 @@
 
 import { useState, type FC } from 'react';
 import { Search, MapPin, Clock, Phone, Star, Filter, Pill, Heart } from 'lucide-react';
- import { sampleMedicines, samplePharmacies } from '@/data/sampleData'; // if alias fails, use relative path
+import { sampleMedicines, samplePharmacies } from '@/data/sampleData'; // if alias fails, use relative path
+import MedicalStoreMap from '@/components/medicines/MedicalStoreMap';
 
 const MedicineAvailability: FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,6 +37,9 @@ const MedicineAvailability: FC = () => {
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Medicine Availability</h1>
           <p className="text-gray-600 dark:text-gray-300">Find medicines and check real-time stock at nearby pharmacies</p>
         </div>
+
+        {/* MAP FOR NEARBY Medical Store */}
+        <MedicalStoreMap />
 
         {/* Search Bar */}
         <div className="mb-6">

@@ -14,6 +14,7 @@ import {
   Clock,
   CheckCircle
 } from 'lucide-react';
+import CampRegistrationForm from './CampRegistrationForm';
 
 interface HealthAlert {
   id: string;
@@ -59,6 +60,10 @@ const HealthAwareness: React.FC = () => {
   const [vaccinationDrives, setVaccinationDrives] = useState<VaccinationDrive[]>([]);
   const [healthCamps, setHealthCamps] = useState<HealthCamp[]>([]);
   const [selectedTab, setSelectedTab] = useState<'alerts' | 'vaccinations' | 'camps'>('alerts');
+  const [showCampForm, setShowCampForm] = useState(false);
+  const [campFormOpen, setCampFormOpen] = useState(false);
+  const [selectedCamp, setSelectedCamp] = useState<HealthCamp | null>(null);
+  const [campFormType, setCampFormType] = useState<'camp' | 'slot'>('camp');
 
   // Mock data
   useEffect(() => {
@@ -346,12 +351,21 @@ const HealthAwareness: React.FC = () => {
                         : 'bg-gray-400 text-gray-200 cursor-not-allowed'
                     }`}
                     disabled={drive.availableSlots === 0}
+                    onClick={() => {
+                      setCampFormType('slot');
+                      setCampFormOpen(true);
+                    }}
                   >
                     {drive.availableSlots > 0 ? 'Book Slot' : 'Fully Booked'}
                   </button>
                 </div>
               </div>
             ))}
+            {campFormOpen && (
+              <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                <CampRegistrationForm onClose={() => setCampFormOpen(false)} type={campFormType} />
+              </div>
+            )}
           </div>
         )}
 
@@ -436,6 +450,11 @@ const HealthAwareness: React.FC = () => {
                         : 'bg-gray-400 text-gray-200 cursor-not-allowed'
                     }`}
                     disabled={camp.currentParticipants >= camp.maxParticipants}
+                    onClick={() => {
+                      setSelectedCamp(camp);
+                      setCampFormType('camp');
+                      setCampFormOpen(true);
+                    }}
                   >
                     {camp.registrationRequired 
                       ? (camp.currentParticipants < camp.maxParticipants ? 'Register' : 'Fully Booked')
@@ -445,6 +464,11 @@ const HealthAwareness: React.FC = () => {
                 </div>
               </div>
             ))}
+            {campFormOpen && (
+              <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                <CampRegistrationForm onClose={() => setCampFormOpen(false)} type={campFormType} />
+              </div>
+            )}
           </div>
         )}
       </div>
