@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import WebRTCVideoCall from '../components/telemedicine/WebRTCVideoCall';
 
 // Import required components (create these in your project)
 // import { VideoCall } from '@/components/video/VideoCall'; // Video call component
@@ -10,12 +11,25 @@ import React, { useState } from 'react';
 
 const Consultations: React.FC = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
+  // State for the search query
+  const [searchQuery, setSearchQuery] = useState('');
 
   const doctors = [
     { id: 'd1', name: 'Dr. Priya Sharma', specialty: 'General Physician', languages: ['hi', 'en'], rating: 4.8 },
     { id: 'd2', name: 'Dr. Amit Singh', specialty: 'Pediatrics', languages: ['en'], rating: 4.6 },
     { id: 'd3', name: 'Dr. Neha Gupta', specialty: 'Gynecology', languages: ['hi', 'en'], rating: 4.9 },
+    { id: 'd4', name: 'Dr. Deepak Kumar', specialty: 'Dermatology', languages: ['en', 'te'], rating: 4.7 },
+    { id: 'd5', name: 'Dr. Anjali Verma', specialty: 'General Physician', languages: ['hi', 'gu'], rating: 4.5 },
   ];
+
+  // Filter doctors based on the search query
+  const filteredDoctors = doctors.filter(doctor => {
+    const query = searchQuery.toLowerCase();
+    return (
+      doctor.name.toLowerCase().includes(query) ||
+      doctor.specialty.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -51,13 +65,8 @@ const Consultations: React.FC = () => {
               </div>
 
               {/* Video Area */}
-              <div className="h-72 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-4">
-                <div className="text-center">
-                  <div className="text-4xl mb-2">📹</div>
-                  <p className="text-gray-500 dark:text-gray-400">Video Call Interface</p>
-                  {/* COMPONENT: <VideoCall roomId="room-xyz" language={selectedLanguage} /> */}
-                  {/* ANIMATION: Fade-in when connecting; pulse for connecting state */}
-                </div>
+              <div className="h-[36rem] bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-4">
+                <WebRTCVideoCall />
               </div>
 
               {/* Scheduler */}
@@ -74,12 +83,25 @@ const Consultations: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Doctor List */}
+          {/* Right: Doctor List with Search Bar */}
           <aside>
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-4">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Available Doctors</h2>
+              
+              {/* Search Bar */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Search by name or specialty..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 border dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
               <div className="space-y-3">
-                {doctors.map((doc) => (
+                {/* Display filtered doctors */}
+                {filteredDoctors.map((doc) => (
                   <div key={doc.id} className="p-3 rounded-lg border dark:border-gray-600 hover:shadow-sm transition bg-white dark:bg-gray-700">
                     {/* COMPONENT: <DoctorCard doctor={doc} /> */}
                     {/* ANIMATION: Staggered fade-in on list render */}
@@ -93,6 +115,12 @@ const Consultations: React.FC = () => {
                     <button className="mt-2 w-full px-3 py-2 text-sm border dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Book</button>
                   </div>
                 ))}
+
+                {filteredDoctors.length === 0 && (
+                  <div className="text-center text-gray-500 dark:text-gray-400 p-4">
+                    No doctors found matching your search.
+                  </div>
+                )}
               </div>
             </div>
           </aside>
@@ -103,5 +131,3 @@ const Consultations: React.FC = () => {
 };
 
 export default Consultations;
-
-
