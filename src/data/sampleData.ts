@@ -556,6 +556,65 @@ export const sampleBlockchainRecords: BlockchainRecord[] = [
   }
 ];
 
+// Enhanced health records for the records page
+export const sampleHealthRecordsForPage = [
+  {
+    id: 'rec_001',
+    patientName: 'Rajesh Kumar',
+    category: 'consultations',
+    status: 'Synced',
+    size: '2.4 MB',
+    date: '2024-01-15',
+    doctorName: 'Dr. Priya Sharma',
+    blockchainHash: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6',
+    lastUpdated: '2 hours ago'
+  },
+  {
+    id: 'rec_002',
+    patientName: 'Sunita Devi',
+    category: 'lab-reports',
+    status: 'Pending',
+    size: '1.8 MB',
+    date: '2024-01-14',
+    doctorName: 'Dr. Amit Singh',
+    blockchainHash: 'b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7',
+    lastUpdated: '1 day ago'
+  },
+  {
+    id: 'rec_003',
+    patientName: 'Lakshmi Reddy',
+    category: 'prescriptions',
+    status: 'Synced',
+    size: '0.9 MB',
+    date: '2024-01-16',
+    doctorName: 'Dr. Neha Gupta',
+    blockchainHash: 'c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8',
+    lastUpdated: '30 minutes ago'
+  },
+  {
+    id: 'rec_004',
+    patientName: 'Manoj Singh',
+    category: 'vaccinations',
+    status: 'Synced',
+    size: '1.2 MB',
+    date: '2024-01-10',
+    doctorName: 'Dr. Rajesh Kumar',
+    blockchainHash: 'd4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9',
+    lastUpdated: '5 days ago'
+  },
+  {
+    id: 'rec_005',
+    patientName: 'Priya Sharma',
+    category: 'medical-history',
+    status: 'Synced',
+    size: '3.1 MB',
+    date: '2024-01-12',
+    doctorName: 'Dr. Amit Singh',
+    blockchainHash: 'e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0',
+    lastUpdated: '3 days ago'
+  }
+];
+
 // Sample Emergency Contacts Data
 export const sampleEmergencyContacts: EmergencyContact[] = [
   {
@@ -735,7 +794,6 @@ export const sampleTestimonials: Testimonial[] = [
 
 // Export individual arrays for direct import
 export const sampleHealthRecords = sampleBlockchainRecords;
-export { sampleConsultations, sampleMedicines, samplePharmacies, sampleTestimonials, sampleHealthAlerts };
 
 // Export all sample data
 export const sampleData = {

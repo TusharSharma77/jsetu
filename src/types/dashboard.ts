@@ -97,3 +97,4 @@ export interface ActivityLog {
   timestamp: Date;
   severity: 'info' | 'warning' | 'error' | 'success';
 }
+

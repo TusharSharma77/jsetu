@@ -303,3 +303,4 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({
 };
 
 export default ChatbotInterface;
+

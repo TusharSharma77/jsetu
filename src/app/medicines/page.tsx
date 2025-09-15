@@ -2,7 +2,7 @@
 
 import { useState, type FC } from 'react';
 import { Search, MapPin, Clock, Phone, Star, Filter, Pill, Heart } from 'lucide-react';
-import { sampleMedicines, samplePharmacies } from '@/data/sampleData'; // if alias fails, use relative path
+ import { sampleMedicines, samplePharmacies } from '@/data/sampleData'; // if alias fails, use relative path
 
 const MedicineAvailability: FC = () => {
   const [searchTerm, setSearchTerm] = useState('');

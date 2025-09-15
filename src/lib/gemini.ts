@@ -225,3 +225,4 @@ export const geminiChatbot = new GeminiChatbot();
 
 // Export types and functions
 export { GeminiChatbot };
+

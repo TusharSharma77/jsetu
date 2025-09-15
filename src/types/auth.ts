@@ -49,3 +49,4 @@ export interface RegisterData {
     address: string;
   };
 }
+

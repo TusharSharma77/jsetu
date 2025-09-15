@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react';
 import { Search, Download, Upload, Eye, Trash2, FileText, Calendar, User, Shield, Clock, CheckCircle } from 'lucide-react';
-import { sampleHealthRecords, sampleConsultations } from '@/data/sampleData';
+import { sampleHealthRecordsForPage } from '@/data/sampleData';
 
 const RecordsOffline: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,7 +16,7 @@ const RecordsOffline: React.FC = () => {
     { id: 'vaccinations', name: 'Vaccinations', icon: Shield }
   ];
 
-  const filteredRecords = sampleHealthRecords.filter(record => 
+  const filteredRecords = sampleHealthRecordsForPage.filter(record => 
     record.patientName.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (selectedCategory === 'all' || record.category === selectedCategory)
   );
