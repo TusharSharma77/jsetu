@@ -9,6 +9,9 @@ const rateLimit = require('express-rate-limit');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { MongoClient } = require('mongodb');
 
+
+
+
 // Load environment variables
 dotenv.config();
 
@@ -455,5 +458,6 @@ app.listen(PORT, () => {
   console.log(`JeevanSetu backend server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
 });
+
 
 module.exports = app;

@@ -26,10 +26,6 @@ export default function LoginLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen dark:text-white antialiased`}
-      >
         <ReduxProvider>
           <I18nProvider>
             <ThemeProvider>
@@ -37,7 +33,5 @@ export default function LoginLayout({
             </ThemeProvider>
           </I18nProvider>
         </ReduxProvider>
-      </body>
-    </html>
   );
 }

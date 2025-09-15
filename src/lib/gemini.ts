@@ -1,228 +1,172 @@
-// Google Gemini API integration for JeevanSetu chatbot
-
+"use client"
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { config } from '@/config/env';
-
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(config.geminiApiKey);
 
 export interface ChatMessage {
-  role: 'user' | 'assistant';
+  id: string;
+  role: 'user' | 'ai';
   content: string;
   timestamp: Date;
-  language?: string;
+  type: 'general' | 'symptom' | 'awareness';
 }
 
-export interface SymptomAnalysis {
-  possibleConditions: Array<{
-    condition: string;
-    confidence: number;
-    severity: 'low' | 'moderate' | 'high' | 'critical';
-    description: string;
-  }>;
-  recommendations: string[];
-  urgency: 'low' | 'moderate' | 'high' | 'critical';
-  nextSteps: string[];
-}
-
-export interface OutbreakAlert {
-  disease: string;
-  region: string;
-  riskLevel: 'low' | 'moderate' | 'high' | 'critical';
-  symptoms: string[];
-  preventiveMeasures: string[];
-  affectedAreas: string[];
-}
-
-class GeminiChatbot {
-  private model: any;
+class GeminiHealthAssistant {
+  private genAI: GoogleGenerativeAI | null = null;
   private chatHistory: ChatMessage[] = [];
+  private apiKey: string | null = null;
 
   constructor() {
-    this.model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    // Initialize with API key from localStorage if available
+    this.initializeFromStorage();
   }
 
-  /**
-   * Analyze symptoms and provide medical insights
-   */
-  async analyzeSymptoms(symptoms: string, language: string = 'en'): Promise<SymptomAnalysis> {
-    const prompt = `
-    As a medical AI assistant for rural healthcare, analyze these symptoms and provide insights:
+  private initializeFromStorage() {
     
-    Symptoms: ${symptoms}
-    Language: ${language}
+    if(typeof window === 'undefined') return;
+
+    const storedKey = localStorage.getItem('gemini_api_key');
+    const storedHistory = localStorage.getItem('chatbot_history');
     
-    Please provide:
-    1. Possible conditions with confidence levels (0-100%)
-    2. Severity assessment (low/moderate/high/critical)
-    3. Recommendations for immediate care
-    4. Urgency level
-    5. Next steps
-    
-    Format your response as JSON with this structure:
-    {
-      "possibleConditions": [
-        {
-          "condition": "string",
-          "confidence": number,
-          "severity": "low|moderate|high|critical",
-          "description": "string"
-        }
-      ],
-      "recommendations": ["string"],
-      "urgency": "low|moderate|high|critical",
-      "nextSteps": ["string"]
+    if (storedKey) {
+      this.setApiKey(storedKey);
     }
     
-    Important: This is for rural areas with limited medical access. Prioritize practical, actionable advice.
-    `;
-
-    try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      // Parse JSON response
-      const analysis = JSON.parse(text);
-      return analysis;
-    } catch (error) {
-      console.error('Error analyzing symptoms:', error);
-      throw new Error('Failed to analyze symptoms');
-    }
-  }
-
-  /**
-   * Generate outbreak alerts based on symptom patterns
-   */
-  async generateOutbreakAlert(symptoms: string[], region: string): Promise<OutbreakAlert | null> {
-    const prompt = `
-    Analyze these symptom patterns for potential disease outbreaks in rural areas:
-    
-    Symptoms: ${symptoms.join(', ')}
-    Region: ${region}
-    
-    Check for patterns that might indicate:
-    - Dengue fever
-    - Malaria
-    - Cholera
-    - Typhoid
-    - Seasonal flu
-    - Other infectious diseases common in rural India
-    
-    If an outbreak pattern is detected, respond with JSON:
-    {
-      "disease": "string",
-      "region": "string",
-      "riskLevel": "low|moderate|high|critical",
-      "symptoms": ["string"],
-      "preventiveMeasures": ["string"],
-      "affectedAreas": ["string"]
-    }
-    
-    If no outbreak pattern is detected, respond with: null
-    `;
-
-    try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      if (text.trim() === 'null') {
-        return null;
+    if (storedHistory) {
+      try {
+        this.chatHistory = JSON.parse(storedHistory).map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+      } catch (error) {
+        console.error('Error parsing chat history:', error);
+        this.chatHistory = [];
       }
-      
-      return JSON.parse(text);
-    } catch (error) {
-      console.error('Error generating outbreak alert:', error);
-      return null;
     }
   }
 
-  /**
-   * Chat with the AI assistant
-   */
-  async chat(message: string, language: string = 'en'): Promise<string> {
-    const prompt = `
-    You are a helpful medical AI assistant for rural healthcare in India. 
-    You provide health information, symptom guidance, and medical advice in ${language}.
-    
-    User message: ${message}
-    
-    Guidelines:
-    - Provide accurate, helpful medical information
-    - Always recommend consulting a doctor for serious symptoms
-    - Use simple language appropriate for rural populations
-    - Consider limited medical resources in rural areas
-    - Be culturally sensitive and respectful
-    - If asked about specific medical conditions, provide general information but emphasize the need for professional medical consultation
-    
-    Respond in ${language}:
-    `;
-
+  public setApiKey(key: string): boolean {
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      // Add to chat history
-      this.chatHistory.push(
-        { role: 'user', content: message, timestamp: new Date(), language },
-        { role: 'assistant', content: text, timestamp: new Date(), language }
-      );
-      
-      return text;
+      this.apiKey = key;
+      this.genAI = new GoogleGenerativeAI(key);
+      localStorage.setItem('gemini_api_key', key);
+      return true;
     } catch (error) {
-      console.error('Error in chat:', error);
-      throw new Error('Failed to process chat message');
+      console.error('Error setting API key:', error);
+      return false;
     }
   }
 
-  /**
-   * Get health awareness information
-   */
-  async getHealthAwareness(topic: string, language: string = 'en'): Promise<string> {
-    const prompt = `
-    Provide health awareness information about ${topic} for rural populations in India.
-    Language: ${language}
+  public isConfigured(): boolean {
+    return this.genAI !== null && this.apiKey !== null;
+  }
+
+  private saveHistory() {
+    localStorage.setItem('chatbot_history', JSON.stringify(this.chatHistory));
+  }
+
+  private addToHistory(role: 'user' | 'ai', content: string, type: 'general' | 'symptom' | 'awareness' = 'general') {
+    const message: ChatMessage = {
+      id: Date.now().toString(),
+      role,
+      content,
+      timestamp: new Date(),
+      type
+    };
+    this.chatHistory.push(message);
+    this.saveHistory();
+  }
+
+  private getSystemPrompt(type: 'general' | 'symptom' | 'awareness', language: string): string {
+    const basePrompt = `You are a helpful health assistant for JeevanSetu telemedicine platform. Always respond in ${language}. Be empathetic, professional, and provide accurate health information. Always recommend consulting healthcare professionals for serious concerns.`;
     
-    Include:
-    - What it is
-    - Common symptoms
-    - Prevention methods
-    - When to seek medical help
-    - Home remedies (if safe)
-    
-    Make it practical and easy to understand for people with limited medical knowledge.
-    `;
+    switch (type) {
+      case 'symptom':
+        return `${basePrompt} Analyze the symptoms provided and suggest possible conditions, severity levels (mild/moderate/severe), and next steps. Always emphasize consulting a doctor for proper diagnosis.`;
+      case 'awareness':
+        return `${basePrompt} Provide educational health information, prevention tips, and general awareness about health topics in an easy-to-understand manner.`;
+      default:
+        return `${basePrompt} Answer general health-related questions, provide basic health advice, and offer emotional support when needed.`;
+    }
+  }
+
+  private async generateResponse(message: string, type: 'general' | 'symptom' | 'awareness', language: string): Promise<string> {
+    if (!this.isConfigured()) {
+      throw new Error('Gemini API not configured. Please provide your API key.');
+    }
 
     try {
-      const result = await this.model.generateContent(prompt);
+      const model = this.genAI!.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const systemPrompt = this.getSystemPrompt(type, language);
+      
+      const prompt = `${systemPrompt}\n\nUser query: ${message}`;
+      
+      const result = await model.generateContent(prompt);
       const response = await result.response;
       return response.text();
-    } catch (error) {
-      console.error('Error getting health awareness:', error);
-      throw new Error('Failed to get health awareness information');
+    } catch (error: any) {
+      console.error('Error generating response:', error);
+      
+      if (error.message?.includes('API_KEY_INVALID')) {
+        throw new Error('Invalid API key. Please check your Gemini API key.');
+      } else if (error.message?.includes('QUOTA_EXCEEDED')) {
+        throw new Error('API quota exceeded. Please check your Gemini API usage limits.');
+      } else {
+        throw new Error('Sorry, I encountered an error. Please try again later.');
+      }
     }
   }
 
-  /**
-   * Get chat history
-   */
-  getChatHistory(): ChatMessage[] {
-    return this.chatHistory;
+  public async chat(message: string, language: string = 'English'): Promise<string> {
+    try {
+      this.addToHistory('user', message, 'general');
+      const response = await this.generateResponse(message, 'general', language);
+      this.addToHistory('ai', response, 'general');
+      return response;
+    } catch (error: any) {
+      const errorMessage = error.message || 'Sorry, I encountered an error processing your message.';
+      this.addToHistory('ai', errorMessage, 'general');
+      throw error;
+    }
   }
 
-  /**
-   * Clear chat history
-   */
-  clearChatHistory(): void {
+  public async analyzeSymptoms(message: string, language: string = 'English'): Promise<string> {
+    try {
+      this.addToHistory('user', message, 'symptom');
+      const response = await this.generateResponse(message, 'symptom', language);
+      this.addToHistory('ai', response, 'symptom');
+      return response;
+    } catch (error: any) {
+      const errorMessage = error.message || 'Sorry, I encountered an error analyzing your symptoms.';
+      this.addToHistory('ai', errorMessage, 'symptom');
+      throw error;
+    }
+  }
+
+  public async getHealthAwareness(message: string, language: string = 'English'): Promise<string> {
+    try {
+      this.addToHistory('user', message, 'awareness');
+      const response = await this.generateResponse(message, 'awareness', language);
+      this.addToHistory('ai', response, 'awareness');
+      return response;
+    } catch (error: any) {
+      const errorMessage = error.message || 'Sorry, I encountered an error providing health information.';
+      this.addToHistory('ai', errorMessage, 'awareness');
+      throw error;
+    }
+  }
+
+  public getChatHistory(): ChatMessage[] {
+    return [...this.chatHistory];
+  }
+
+  public clearChatHistory(): void {
     this.chatHistory = [];
+    localStorage.removeItem('chatbot_history');
+  }
+
+  public getLastMessages(count: number = 10): ChatMessage[] {
+    return this.chatHistory.slice(-count);
   }
 }
 
 // Export singleton instance
-export const geminiChatbot = new GeminiChatbot();
-
-// Export types and functions
-export { GeminiChatbot };
-
+export const geminiAssistant = new GeminiHealthAssistant();

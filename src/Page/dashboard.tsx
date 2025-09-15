@@ -17,41 +17,41 @@ const HealthcareDashboard = () => {
   const [showVideoCall, setShowVideoCall] = useState(false);
   
   // Get user role from Redux store
-  const userRole = useSelector((state: RootState) => state.auth.userData?.role as string) || 'patient';
+  const userRole = useSelector((state: RootState) => state.auth.userData?.role||"Patient")
 
-  // Sample data for telemedicine app
+
+  // Use sampleData for all demo arrays
   const healthStats = [
-    { title: 'Active Consultations', value: '24', change: '+8%', trend: 'up', icon: '🩺' },
-    { title: 'Patients Served Today', value: '156', change: '+12%', trend: 'up', icon: '👥' },
-    { title: 'Offline Records Synced', value: '89', change: '+5%', trend: 'up', icon: '📱' },
-    { title: 'Medicine Availability', value: '94%', change: '+2%', trend: 'up', icon: '💊' },
+    { title: 'Active Consultations', value: sampleData.consultations.filter(c => c.status === 'active').length, change: '+8%', trend: 'up', icon: '🩺' },
+    { title: 'Patients Served Today', value: sampleData.consultations.length, change: '+12%', trend: 'up', icon: '👥' },
+    { title: 'Offline Records Synced', value: sampleData.blockchainRecords.length, change: '+5%', trend: 'up', icon: '📱' },
+    { title: 'Medicine Availability', value: `${sampleData.medicines.length}`, change: '+2%', trend: 'up', icon: '💊' },
   ];
-
-  const recentConsultations = [
-    { id: 1, patient: 'Rajesh Kumar', doctor: 'Dr. Priya Sharma', time: '2 minutes ago', status: 'active', language: 'Hindi' },
-    { id: 2, patient: 'Sunita Devi', doctor: 'Dr. Amit Singh', time: '15 minutes ago', status: 'completed', language: 'English' },
-    { id: 3, patient: 'Vikram Patel', doctor: 'Dr. Neha Gupta', time: '1 hour ago', status: 'completed', language: 'Gujarati' },
-    { id: 4, patient: 'Lakshmi Reddy', doctor: 'Dr. Rajesh Kumar', time: '2 hours ago', status: 'scheduled', language: 'Telugu' },
-  ];
-
-  const medicineAvailability = [
-    { name: 'Paracetamol 500mg', pharmacy: 'Rural Health Center', stock: 'High', distance: '2.5 km' },
-    { name: 'Amoxicillin 250mg', pharmacy: 'Village Medical Store', stock: 'Medium', distance: '1.8 km' },
-    { name: 'Insulin Glargine', pharmacy: 'District Hospital', stock: 'Low', distance: '15 km' },
-    { name: 'Metformin 500mg', pharmacy: 'Community Pharmacy', stock: 'High', distance: '3.2 km' },
-  ];
-
-  const aiSymptomResults = [
-    { symptom: 'Fever + Headache', confidence: '85%', recommendation: 'Consult doctor within 24 hours', severity: 'moderate' },
-    { symptom: 'Chest Pain', confidence: '92%', recommendation: 'Immediate medical attention required', severity: 'high' },
-    { symptom: 'Cough + Cold', confidence: '78%', recommendation: 'Home care with rest and fluids', severity: 'low' },
-  ];
-
-  const offlineRecords = [
-    { patient: 'Anita Sharma', lastSync: '2 hours ago', records: 12, status: 'synced' },
-    { patient: 'Manoj Kumar', lastSync: '1 day ago', records: 8, status: 'pending' },
-    { patient: 'Sushila Devi', lastSync: '3 hours ago', records: 15, status: 'synced' },
-  ];
+  const recentConsultations = sampleData.consultations.map(c => ({
+    patient: c.patientName,
+    doctor: c.doctorName,
+    time: c.date ? new Date(c.date).toLocaleString() : '',
+    status: c.status,
+    language: c.language
+  }));
+  const medicineAvailability = sampleData.medicines.map(m => ({
+    name: m.name,
+    pharmacy: sampleData.pharmacies[0]?.name || '',
+    stock: m.prescriptionRequired ? 'High' : 'Medium',
+    distance: sampleData.pharmacies[0]?.distance || 0
+  }));
+  const aiSymptomResults = sampleData.aiQueries.map(q => ({
+    symptom: q.query,
+    confidence: q.response?.possibleConditions[0]?.confidence + '%',
+    recommendation: q.response?.recommendations[0] || '',
+    severity: q.response?.possibleConditions[0]?.severity || 'low'
+  }));
+  const offlineRecords = sampleData.blockchainRecords.map(r => ({
+    patient: r.patientId,
+    records: 1,
+    lastSync: r.timestamp ? new Date(r.timestamp).toLocaleString() : '',
+    status: r.isEncrypted ? 'synced' : 'pending'
+  }));
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -80,27 +80,20 @@ const HealthcareDashboard = () => {
 
   // Render different views based on user role
   if (activeView === 'admin' && userRole === 'admin') {
-    return <AdminDashboard />;
+  return <AdminDashboard />;
   }
 
   if (userRole === 'patient' && activeView === 'dashboard') {
-    return <PatientDashboard />;
+  return <PatientDashboard />;
   }
 
   if (activeView === 'emergency') {
-    return <EnhancedSOS />;
+  return <EnhancedSOS />;
   }
 
   if (activeView === 'video-call' && showVideoCall) {
     return (
-      <VideoCall
-        roomId="consultation-123"
-        userId="user-456"
-        userName="Patient"
-        isDoctor={false}
-        onCallEnd={handleEndVideoCall}
-        language="en"
-      />
+      <VideoCall />
     );
   }
 
@@ -222,7 +215,7 @@ const HealthcareDashboard = () => {
               <div className="space-y-3">
                 <h3 className="font-medium text-gray-900 dark:text-white">Recent Consultations</h3>
                 {recentConsultations.map((consultation) => (
-                  <div key={consultation.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div key={consultation.time}className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <div className={`w-3 h-3 rounded-full ${
                         consultation.status === 'active' ? 'bg-green-500' :
